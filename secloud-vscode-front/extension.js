@@ -32,17 +32,15 @@ class IFCChecker {
             overviewRulerColor: 'yellow',
             overviewRulerLane: vscode.OverviewRulerLane.Right,
             light: {
-                // this color will be used in light color themes
                 borderColor: 'red'
             },
             dark: {
-                // this color will be used in dark color themes
                 borderColor: 'red'
             }
         });
 
         //Removing decorations
-      this.changeDisposable =  vscode.workspace.onDidChangeTextDocument((e) => {
+        this.changeDisposable = vscode.workspace.onDidChangeTextDocument((e) => {
             if (e.document === vscode.window.activeTextEditor.document) {
                 vscode.window.activeTextEditor.setDecorations(this.ifcLeakingStatementDecorationType, []);
             }
@@ -50,7 +48,6 @@ class IFCChecker {
     }
 
     runOnActiveEditor() {
-        //this.statusBarItem.show()
         if (vscode.window.activeTextEditor) {
             this.srcText = vscode.window.activeTextEditor.document.getText();
             this.runIFCMonitor(this.srcText);
@@ -74,7 +71,6 @@ class IFCChecker {
     handleResult(obj) {
         if (this.flag) {
             this.statusBarItem.text = `Illicit IFC at: ${obj.node.type}.`;
-
             const startPos = vscode.window.activeTextEditor.document.positionAt(obj.node.start);
             const endPos = vscode.window.activeTextEditor.document.positionAt(obj.node.end);
             const decoration = {
@@ -88,8 +84,6 @@ class IFCChecker {
     setItemStyle(color) {
         this.statusBarItem.color = color
     }
-
-
 
     dispose() {
         this.statusBarItem.dispose();
