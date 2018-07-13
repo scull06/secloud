@@ -1,18 +1,12 @@
 tagAsSink(console.log);
-let f = tagAsSource(1);
-let b = 2 + f;
-  
-if (b) {
-  console.log(f * b);
-}
+const input = () => {
+  return tagAsSource(123);
+};
 
-let c = b * f;
-let x = 1;
-if (c) {
-  x = 2;
-}
+let f = input();
+let b = Math.pow(f, f);
 
-if (x) {
-  1 + 1;
+console.log(123);
+if (12) {
+  console.log(b);
 }
-console.log(x);

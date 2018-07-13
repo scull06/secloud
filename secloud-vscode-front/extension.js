@@ -1,4 +1,8 @@
 const vscode = require('vscode');
+const vulnModel = require("./mlModeBuilder");
+// const {
+//     IFCCodeActionProvider
+// } = require("./actionProvider");
 
 
 const {
@@ -7,11 +11,26 @@ const {
 
 function activate(context) {
     let ifcChecker = new IFCChecker(vscode.window);
-    let disposable = vscode.commands.registerCommand('extension.executeIFC', function () {
+
+    //Registering commands to run the different tools
+
+    let ifcDisposable = vscode.commands.registerCommand('extension.executeIFC', function () {
         ifcChecker.runOnActiveEditor();
     });
+
+    let mlDisposable = vscode.commands.registerCommand('extension.suggestSourcesAndSinks', function () {
+        //TODO: run the machine learning for the code...
+        console.log("Suggesting sources and sinks....");
+        ifcChecker.updateVulDiagCollection();
+    });
+
+
+
     context.subscriptions.push(ifcChecker);
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(ifcChecker);
+    context.subscriptions.push(ifcDisposable);
+    context.subscriptions.push(mlDisposable);
+
     console.log('Guardia IFC extension Active!');
 }
 
@@ -21,11 +40,11 @@ function deactivate() {
 
 class IFCChecker {
     constructor(window) {
-        let flag = false;
+        this.flag = false;
         this.window = window;
-        this.statusBarItem = this.window.createStatusBarItem(StatusBarAlignment.Left, 4);
         this.srcText = '';
-
+        this.statusBarItem = this.window.createStatusBarItem(StatusBarAlignment.Left, 4);
+        this.diagnostics = vscode.languages.createDiagnosticCollection("sources-sinks");
         this.ifcLeakingStatementDecorationType = vscode.window.createTextEditorDecorationType({
             borderWidth: '1px',
             borderStyle: 'solid',
@@ -43,6 +62,7 @@ class IFCChecker {
         this.changeDisposable = vscode.workspace.onDidChangeTextDocument((e) => {
             if (e.document === vscode.window.activeTextEditor.document) {
                 vscode.window.activeTextEditor.setDecorations(this.ifcLeakingStatementDecorationType, []);
+                this.diagnostics.clear();
             }
         });
     }
@@ -54,8 +74,36 @@ class IFCChecker {
         }
     }
 
+    /**
+     * Feeds the ML component with the source code and get back a model of sources and sinks with AST information
+     */
+    updateVulDiagCollection() {
+        if (vscode.window.activeTextEditor) {
+            this.srcText = vscode.window.activeTextEditor.document.getText();
+            let diagnostics = vulnModel.getDiagnostics(this.srcText);
+            this.diagnostics.set(vscode.window.activeTextEditor.document.uri, diagnostics.sinkDiagnostics);
+            //registering the CodeActionProvider for refactoring
+         //   vscode.languages.registerCodeActionsProvider("javascript", new IFCCodeActionProvider(diagnostics.sinkDiagnostics));
+        }
+    }
+
+    /**
+     * 
+     * @param {*} src JavaScript code with annotations of sources and sinks 
+     * e.g: 
+     * tagAsSink(console.log);
+     * ...
+     * let passowrd = tagAsSource($('.password-field').get('value'));
+     * 
+     */
     runIFCMonitor(src) {
-        const G = require('guardia-ifc/nomodels');
+        /**
+         * Setting up Guardia IFC.
+         */
+        const G = require('guardia-ifc/index');
+        let slModels = require('guardia-ifc/models/sl-model');
+        slModels.setup(G.extlib);
+
         let instCode = G.instrument(src);
         try {
             global.eval(instCode);
