@@ -25,14 +25,12 @@ function activate(context) {
     });
 
 
-
-    context.subscriptions.push(ifcChecker);
     context.subscriptions.push(ifcChecker);
     context.subscriptions.push(ifcDisposable);
     context.subscriptions.push(mlDisposable);
 
     console.log('Guardia IFC extension Active!');
-}
+}``
 
 function deactivate() {
 

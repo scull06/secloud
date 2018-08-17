@@ -3,7 +3,7 @@ const input = () => {
   return tagAsSource(123);
 };
 
-console.log(123)
+console.log(123);
 
 let f = input();
 let b = Math.pow(f, f);
