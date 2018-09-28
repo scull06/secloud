@@ -1,0 +1,6 @@
+flask
+flask-restful
+requests
+json
+numpy
+sklearn
