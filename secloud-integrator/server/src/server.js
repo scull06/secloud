@@ -17,13 +17,11 @@ let connection = createConnection(ProposedFeatures.all);
 
 connection.onInitialize((params) => {
     let capabilities = params.capabilities
-
     return {
         capabilities: {
             executeCommandProvider: {
                 commands: [COMMANDS.runDynamicIFC, COMMANDS.runDynamicAC]
             },
-
         }
     }
 });
