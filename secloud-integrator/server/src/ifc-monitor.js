@@ -4,7 +4,7 @@ slModels.setup(G.extlib);
 
 exports.run = (code) => {
     global.eval(G.instrument(code));
-}
+}  
 
 exports.getDiagnostics = (error) => {
     let node = error.node; //start ... end
