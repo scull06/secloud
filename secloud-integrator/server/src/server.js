@@ -4,10 +4,18 @@ const {
     ProposedFeatures,
 } = require('vscode-languageserver');
 
+const {
+    getFunctionCalls,
+    getMLSuggestions,
+    getMLDiagnostics
+} = require('./MLHelper');
+
+const Uri = require("vscode-uri");
+
 const COMMANDS = {
     "runDynamicAC": "dynamicAccessControlCommand",
     "runDynamicIFC": "dynamicIFCCommand",
-    "runAIVModelRecommender": "runAIVModelRecommenderCommand",
+    "runMLModelRecommender": "runMLModelRecommenderCommand",
     "runStaticAC": "staticAccessControlCommand",
 }
 
@@ -20,18 +28,20 @@ connection.onInitialize((params) => {
     return {
         capabilities: {
             executeCommandProvider: {
-                commands: [COMMANDS.runDynamicIFC, COMMANDS.runDynamicAC]
+                commands: [COMMANDS.runDynamicIFC, COMMANDS.runDynamicAC, COMMANDS.runMLModelRecommender]
             },
+            //codeActionProvider: "true",
         }
     }
 });
 
 connection.onExecuteCommand((params, cancelationToken) => {
     let diagnostics = [];
+
+    console.log(params.command);
     switch (params.command) {
         case COMMANDS.runDynamicIFC:
             {
-                console.log('Executing the dynamic component');
                 try {
                     IFCMonitor.run(params.src);
                 } catch (error) {
@@ -39,15 +49,29 @@ connection.onExecuteCommand((params, cancelationToken) => {
                 }
                 break;
             }
-        case COMMANDS.runDynamicAC:
+        case COMMANDS.runMLModelRecommender:
             {
-                //call to the static Guardia
+                const calls = getFunctionCalls(params.src);
+
+                getMLSuggestions(calls).then(result => {
+                    debugger;
+                    connection.sendDiagnostics({
+                        uri: params.docUri,
+                        diagnostics: getMLDiagnostics(result)
+                    });
+
+                })
                 break;
             }
     }
+    debugger
+    const uri = Uri.default.file(params.docUri.path);
+
     connection.sendDiagnostics({
-        uri: params.docUri.path,
+        uri: uri,
         diagnostics: diagnostics
     });
 })
+
+//connection.onCodeAction(() => {})
 connection.listen()

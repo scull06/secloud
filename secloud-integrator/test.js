@@ -1,14 +1,16 @@
+// @ts-nocheck
+//No sensitive data can flow to the console.
 tagAsSink(console.log);
+
 const input = () => {
-  return tagAsSource(123);
+  return tagAsSource("My Password here");
 };
 
-console.log(123);
+console.log("Hello world!");
 
 let f = input();
-let b = Math.pow(f, f);
+let b = Math.pow(f, 2);
 
-console.log(123);
-if (12) {
-              console.log(b);          
+if (true) {
+  console.log(b); //must be prevented
 }

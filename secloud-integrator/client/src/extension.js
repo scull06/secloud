@@ -16,7 +16,7 @@ const {
 let client;
 
 const COMMANDS = {
-    "accessControlMonitor": "secloud.executeAccessControlMonitor",
+    "MachineLearningSuggestions": "secloud.runMLModelRecommender",
     "IFCMonitor": "secloud.executeIFCMonitor"
 }
 
@@ -55,9 +55,10 @@ function activate(context) {
     let client = new LanguageClient('SeCloud Security Server', 'Security Server module', serverOptions, clientOptions);
     //starts the client extension adn also the server
     //For calling the AC monitoring component
-    let dynAC = commands.registerCommand(COMMANDS.accessControlMonitor, () => {
+    let ml = commands.registerCommand(COMMANDS.MachineLearningSuggestions, () => {
+        // @ts-ignore
         client.sendRequest(ExecuteCommandRequest.type, {
-            command: "dynamicAccessControlCommand",
+            command: "runMLModelRecommenderCommand",
             src: window.activeTextEditor.document.getText(),
             docUri: window.activeTextEditor.document.uri
         }, CancellationToken.None);
@@ -65,13 +66,14 @@ function activate(context) {
 
     //For calling the IFC monitoring component
     let dynIFC = commands.registerCommand(COMMANDS.IFCMonitor, () => {
+        // @ts-ignore
         client.sendRequest(ExecuteCommandRequest.type, {
             command: "dynamicIFCCommand",
             src: window.activeTextEditor.document.getText(),
             docUri: window.activeTextEditor.document.uri
         }, CancellationToken.None);
     });
-    context.subscriptions.push(dynAC);
+    context.subscriptions.push(ml);
     context.subscriptions.push(dynIFC);
     context.subscriptions.push(client.start());
 }
