@@ -7,7 +7,8 @@ const {
 } = require("escodegen");
 
 const {
-    traverse
+    traverse,
+    VisitorOption
 } = require("estraverse")
 
 const fetch = require("node-fetch");
@@ -22,8 +23,10 @@ const getFunctionCalls = (src) => {
     })
 
     traverse(ast, {
-        enter: function (node) {
-            if (node.type === 'CallExpression') {
+        enter: function (node, parent) {
+            if (node.type === 'CallExpression' && (node.callee.name === 'tagAsSink' || node.callee.name === 'tagAsSource')) {
+                return VisitorOption.Skip;
+            } else if (node.type === 'CallExpression') {
                 calls.push({
                     textRaw: generate(node),
                     loc: node.loc,
@@ -58,9 +61,8 @@ const getDiagnostics = (annotatedCalls) => {
         return call["class:"] && call["class:"] !== "";
     });
 
-    //console.log(filteredCalls)
-
     let result = filteredCalls.map(call => {
+
         return {
             range: {
                 start: {
@@ -72,13 +74,15 @@ const getDiagnostics = (annotatedCalls) => {
                     character: call.loc.end.column
                 }
             },
-            severity: 1, //Error
-            //code: "Something",
+            severity: 2, //Error
+            code: call['class:'],
             source: 'ML Recommender',
-            message: "Wrap with source or sinks wrappers8"
+            message: "Wrap with source or sink code",
+            tags: [{
+                src: call.textRaw
+            }]
         }
     });
-    debugger;
     return result;
 }
 
@@ -105,7 +109,7 @@ exports.getMLDiagnostics = getDiagnostics;
 // }`))
 
 // getMLSuggestions(calls).then(x => {
-//     console.log(getDiagnostics(x))
+//     console.log((getDiagnostics(x)))
 // })
 
 

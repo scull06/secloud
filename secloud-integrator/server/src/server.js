@@ -1,7 +1,7 @@
 // @ts-nocheck
 const {
     createConnection,
-    ProposedFeatures,
+    ProposedFeatures, TextDocuments 
 } = require('vscode-languageserver');
 
 const {
@@ -23,6 +23,23 @@ const IFCMonitor = require('./ifc-monitor');
 
 let connection = createConnection(ProposedFeatures.all);
 
+const server = {
+    codeActionProvider: {
+        provideCodeActions: function (document, range, context, token) {
+            const diagnostic = context.diagnostics[0];
+            if (diagnostic && diagnostic.code === "Source") {
+                //const replacement = `tagAsSource(${diagnostic.src})`;
+                return [{
+                    title: "Tag as sensitive information",
+                    command: "refactorML",
+                    arguments: [document, diagnostic, "replacement"]
+                }]
+            }
+            return []
+        }
+    }
+};
+
 connection.onInitialize((params) => {
     let capabilities = params.capabilities
     return {
@@ -30,48 +47,51 @@ connection.onInitialize((params) => {
             executeCommandProvider: {
                 commands: [COMMANDS.runDynamicIFC, COMMANDS.runDynamicAC, COMMANDS.runMLModelRecommender]
             },
-            //codeActionProvider: "true",
+            codeActionProvider: "true",
         }
     }
 });
 
 connection.onExecuteCommand((params, cancelationToken) => {
-    let diagnostics = [];
 
-    console.log(params.command);
     switch (params.command) {
         case COMMANDS.runDynamicIFC:
             {
+                let diagnostics = [];
                 try {
                     IFCMonitor.run(params.src);
                 } catch (error) {
                     diagnostics.push(IFCMonitor.getDiagnostics(error));
+                    connection.sendDiagnostics({
+                        uri: params.docUri.external,
+                        diagnostics: diagnostics
+                    });
                 }
                 break;
             }
         case COMMANDS.runMLModelRecommender:
             {
                 const calls = getFunctionCalls(params.src);
-
                 getMLSuggestions(calls).then(result => {
-                    debugger;
                     connection.sendDiagnostics({
-                        uri: params.docUri,
+                        uri: params.docUri.external,
                         diagnostics: getMLDiagnostics(result)
                     });
-
                 })
                 break;
             }
     }
-    debugger
-    const uri = Uri.default.file(params.docUri.path);
+})
 
+const sendDiagnostics = (uri) => {
     connection.sendDiagnostics({
         uri: uri,
         diagnostics: diagnostics
     });
+}
+
+connection.onCodeAction((params) => {
+    return server.codeActionProvider.provideCodeActions(params.textDocument, params.range, params.context)
 })
 
-//connection.onCodeAction(() => {})
-connection.listen()
+connection.listen();

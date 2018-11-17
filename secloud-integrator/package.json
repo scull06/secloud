@@ -44,8 +44,8 @@
         "estraverse": "4.2.0",
         "guardia-ifc": "^0.4.0",
         "node-fetch": "2.3.0",
-        "vscode-languageclient": "^4.4.0",
-        "vscode-languageserver": "^4.4.0",
+        "vscode-languageclient": "^5.1.1",
+        "vscode-languageserver": "^5.1.0",
         "vscode-uri": "^1.0.6"
     }
 }

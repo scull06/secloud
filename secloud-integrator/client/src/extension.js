@@ -1,7 +1,10 @@
 const {
     workspace,
     commands,
-    window
+    window,
+    WorkspaceEdit,
+    Range,
+    Position
 } = require('vscode');
 
 const path = require('path');
@@ -73,6 +76,11 @@ function activate(context) {
             docUri: window.activeTextEditor.document.uri
         }, CancellationToken.None);
     });
+
+    //For refactoring
+    let refCmd = commands.registerCommand("refactorML", applyRefactor);
+
+    context.subscriptions.push(refCmd);
     context.subscriptions.push(ml);
     context.subscriptions.push(dynIFC);
     context.subscriptions.push(client.start());
@@ -83,6 +91,23 @@ function deactivate() {
         return undefined;
     }
     return client.stop();
+}
+
+//TODO: FINISH THIS
+const applyRefactor = (document, diagnostic, replacement) => {
+    let edit = new WorkspaceEdit();
+    let start = new Position(diagnostic.range.start.line, diagnostic.range.start.character);
+    let end = new Position(diagnostic.range.end.line, diagnostic.range.end.character);
+
+    let range = new Range(start, end);
+    let text = window.activeTextEditor.document.getText(range);
+
+    if (diagnostic.code === "Source") {
+        edit.replace(document.uri, range, `tagAsSource(${text})`);
+    } else if (diagnostic.code === "Sink") {
+        edit.replace(document.uri, range, `tagAsSink(${text})`);
+    }
+    workspace.applyEdit(edit);
 }
 
 exports.activate = activate;
