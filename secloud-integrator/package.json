@@ -24,6 +24,10 @@
             {
                 "command": "secloud.executeIFCMonitor",
                 "title": "SeCloud: Execute IFC monitor"
+            },
+            {
+                "command": "secloud.executeModelChecker",
+                "title": "SeCloud: Execute Model Checker"
             }
         ]
     },

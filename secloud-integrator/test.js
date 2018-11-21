@@ -6,10 +6,11 @@ function getInput() {
 }
 
 console.log("Hello world!");
-  
+
 let f = tagAsSource(getInput());
+
 let b = Math.pow(f, 2);
 
 if (true) {
-  
-  console.log(b); 
+  tagAsSource(console.log(b));
+}

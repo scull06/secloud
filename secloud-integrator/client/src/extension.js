@@ -20,7 +20,8 @@ let client;
 
 const COMMANDS = {
     "MachineLearningSuggestions": "secloud.runMLModelRecommender",
-    "IFCMonitor": "secloud.executeIFCMonitor"
+    "IFCMonitor": "secloud.executeIFCMonitor",
+    "ModelChecking": "secloud.executeModelChecker"
 }
 
 function activate(context) {
@@ -49,6 +50,9 @@ function activate(context) {
         documentSelector: [{
             scheme: 'file',
             language: 'javascript'
+        },{
+            scheme: 'file',
+            language: 'html'
         }],
         // synchronize: {
         //     // Notify the server about file changes to '.clientrc files contained in the workspace
@@ -80,7 +84,18 @@ function activate(context) {
     //For refactoring
     let refCmd = commands.registerCommand("refactorML", applyRefactor);
 
+    //For model cheking
+    let modelCheckerCmd = commands.registerCommand(COMMANDS.ModelChecking, () => {
+        // @ts-ignore
+        client.sendRequest(ExecuteCommandRequest.type, {
+            command: "modelCheckerCommand",
+            src: window.activeTextEditor.document.getText(),
+            docUri: window.activeTextEditor.document.uri
+        }, CancellationToken.None);
+    });
+
     context.subscriptions.push(refCmd);
+    context.subscriptions.push(modelCheckerCmd);
     context.subscriptions.push(ml);
     context.subscriptions.push(dynIFC);
     context.subscriptions.push(client.start());

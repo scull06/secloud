@@ -16,7 +16,7 @@ const COMMANDS = {
     "runDynamicAC": "dynamicAccessControlCommand",
     "runDynamicIFC": "dynamicIFCCommand",
     "runMLModelRecommender": "runMLModelRecommenderCommand",
-    "runStaticAC": "staticAccessControlCommand",
+    "runModelChecker": "modelCheckerCommand",
 }
 
 const IFCMonitor = require('./ifc-monitor');
@@ -45,12 +45,13 @@ connection.onInitialize((params) => {
     return {
         capabilities: {
             executeCommandProvider: {
-                commands: [COMMANDS.runDynamicIFC, COMMANDS.runDynamicAC, COMMANDS.runMLModelRecommender]
+                commands: [COMMANDS.runDynamicIFC, COMMANDS.runDynamicAC, COMMANDS.runMLModelRecommender, COMMANDS.runModelChecker]
             },
             codeActionProvider: "true",
         }
     }
 });
+
 
 connection.onExecuteCommand((params, cancelationToken) => {
 
@@ -80,6 +81,13 @@ connection.onExecuteCommand((params, cancelationToken) => {
                 })
                 break;
             }
+        case COMMANDS.runModelChecker:
+        {
+            //Add your code here
+            console.log(params.src); //HTML
+            debugger;
+            break;
+        }
     }
 })
 
